@@ -1,11 +1,6 @@
 name: Build iOS IPA
 on:
   workflow_dispatch:
-    inputs:
-      build-type:
-        description: 'Build type'
-        default: 'development'
-        options: ['development']
   push:
     branches: [main]
 
@@ -23,21 +18,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install EAS CLI
-        run: npm install -g eas-cli
+      - name: Prebuild iOS project
+        run: npx expo prebuild --platform ios
 
-      - name: Configure Expo project
-        run: npx eas init --id f830a7cd-76ab-44bb-b3ff-672bd69cf29c --force
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-
-      - name: Build IPA
-        run: npx eas build -p ios --profile preview --non-interactive --wait
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      - name: Build with Xcode (development signing)
+        run: |
+          cd ios
+          xcodebuild -workspace pardalos.xcworkspace \
+            -scheme pardalos \
+            -configuration Release \
+            -sdk iphoneos \
+            -allowProvisioningUpdates \
+            -archivePath ../build/pardalos.xcarchive \
+            archive
+          xcodebuild -exportArchive \
+            -archivePath ../build/pardalos.xcarchive \
+            -exportPath ../build/ \
+            -exportOptionsPlist ../export-options.plist \
+            -allowProvisioningUpdates
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: pardalos-ipa
-          path: '*.ipa'
+          path: build/*.ipa
