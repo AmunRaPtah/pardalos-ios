@@ -1,0 +1,43 @@
+name: Build iOS IPA
+on:
+  workflow_dispatch:
+    inputs:
+      build-type:
+        description: 'Build type'
+        default: 'development'
+        options: ['development']
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Configure Expo project
+        run: npx eas init --id f830a7cd-76ab-44bb-b3ff-672bd69cf29c --force
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build IPA
+        run: npx eas build -p ios --profile preview --non-interactive --wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: pardalos-ipa
+          path: '*.ipa'
