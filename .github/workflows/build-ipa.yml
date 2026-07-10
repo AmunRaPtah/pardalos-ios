@@ -42,25 +42,25 @@ jobs:
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Using workspace=$WS scheme=$SCHEME"
 
-      - name: Build unsigned archive
+      - name: Build unsigned (device)
         run: |
           cd ios
-          xcodebuild archive \
+          xcodebuild build \
             -workspace "${{ steps.xc.outputs.workspace }}" \
             -scheme "${{ steps.xc.outputs.scheme }}" \
             -configuration Release \
             -sdk iphoneos \
-            -archivePath "$RUNNER_TEMP/Pardalos.xcarchive" \
+            -derivedDataPath "$RUNNER_TEMP/dd" \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+            CODE_SIGNING_ALLOWED=NO
 
       - name: Package .app into unsigned .ipa
         run: |
           cd "$RUNNER_TEMP"
-          APP=$(ls -d Pardalos.xcarchive/Products/Applications/*.app | head -1)
+          APP=$(find dd/Build/Products -maxdepth 2 -name '*.app' -path '*Release-iphoneos*' | head -1)
           echo "Packaging: $APP"
+          test -n "$APP" || { echo "No .app found"; find dd/Build/Products -name '*.app'; exit 1; }
           rm -rf Payload && mkdir -p Payload
           cp -R "$APP" Payload/
           zip -qry Pardalos-unsigned.ipa Payload
