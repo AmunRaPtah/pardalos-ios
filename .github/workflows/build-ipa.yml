@@ -37,10 +37,13 @@ jobs:
         run: |
           cd ios
           WS=$(ls -d *.xcworkspace | head -1)
-          SCHEME=$(xcodebuild -workspace "$WS" -list 2>/dev/null | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
+          # The app scheme matches the .xcodeproj name (NOT the first Pod scheme).
+          SCHEME=$(basename "$(ls -d *.xcodeproj | head -1)" .xcodeproj)
           echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Using workspace=$WS scheme=$SCHEME"
+          echo "--- available schemes ---"
+          xcodebuild -workspace "$WS" -list 2>/dev/null | sed -n '/Schemes:/,$p' | head -20
 
       - name: Build unsigned (device)
         run: |
