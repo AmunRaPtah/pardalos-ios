@@ -37,6 +37,25 @@ jobs:
       - name: Expo prebuild (generate native iOS project + pods)
         run: npx expo prebuild --platform ios
 
+      # Patch expo-dev-menu Assets.xcassets — it ships simulator-specific runtime
+      # version references that don't match all Xcode SDK builds. Strip the
+      # simulator <Assets> so the device build doesn't choke on it.
+      - name: Patch expo-dev-menu simulator assets
+        run: |
+          XCASSETS="node_modules/expo-dev-menu/ios/Assets.xcassets"
+          if [ -f "$XCASSETS/Contents.json" ]; then
+            echo "Before:"
+            jq '.' "$XCASSETS/Contents.json"
+            # Remove the simulator-specific data variant (iphonesimulator platform)
+            jq '.properties |= map(select(.platform != "iphonesimulator"))' \
+              "$XCASSETS/Contents.json" > /tmp/patched.json
+            cp /tmp/patched.json "$XCASSETS/Contents.json"
+            echo "After:"
+            jq '.' "$XCASSETS/Contents.json"
+          else
+            echo "No Contents.json at $XCASSETS — maybe already removed?"
+          fi
+
       - name: Detect workspace + scheme
         id: xc
         run: |
