@@ -11,7 +11,6 @@
 require 'xcodeproj'
 
 PROJECT_PATH = 'ios/Pardalos.xcodeproj'
-WEB_SRC      = 'ios/Pardalos/web'
 BUILD_PHASE_NAME = 'Copy Web Assets'
 
 project = Xcodeproj::Project.open(PROJECT_PATH)
@@ -26,26 +25,19 @@ else
   phase.shell_script = <<~SCRIPT
     set -e
     WEB_SRC="$SRCROOT/Pardalos/web"
-    WEB_DST="$TARGET_BUILD_DIR/#{target.product_build_phase&.build_files&.first&.file_ref&.real_path&.parent&.basename || '$UNLOCALIZED_RESOURCES_FOLDER_PATH'}/web"
+    WEB_DST="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/web"
     if [ -d "$WEB_SRC" ]; then
       rm -rf "$WEB_DST"
-      cp -R "$WEB_SRC" "$WEB_DST"
-      echo "Copied web assets (#{Dir.glob('ios/Pardalos/web/**/*').select { |f| File.file?(f) }.size} files)"
+      ditto "$WEB_SRC" "$WEB_DST"
+      echo "Copied $(find "$WEB_DST" -type f | wc -l) web assets into bundle"
+    else
+      echo "WARNING: Web assets not found at $WEB_SRC"
     fi
   SCRIPT
-  # Move this phase to run BEFORE the "Sources" compile phase
-  compile_phase_index = target.build_phases.index { |p| p.isa == 'PBXSourcesBuildPhase' }
-  target.build_phases.move(phase, compile_phase_index) if compile_phase_index
+  # Move this phase to run BEFORE the "Copy Bundle Resources" phase
+  resources_phase_index = target.build_phases.index { |p| p.isa == 'PBXResourcesBuildPhase' }
+  target.build_phases.move(phase, resources_phase_index) if resources_phase_index
   puts "✓ Added build phase '#{BUILD_PHASE_NAME}'"
-end
-
-# Also create a file group reference for convenience in Xcode
-web_group = project.main_group['Pardalos']&.find_subpath('web', true) rescue nil
-web_group ||= project.main_group.new_group('Web Assets', 'Pardalos/web')
-if web_group
-  web_group.source_tree = 'SOURCE_ROOT'
-  web_group.path = 'Pardalos/web'
-  puts "✓ Web group reference ready"
 end
 
 project.save
