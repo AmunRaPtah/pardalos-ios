@@ -1,1 +1,0 @@
-import{j as r}from"./vendor-react-BtmteCOU.js";function o(){return r.jsx("div",{style:{position:"absolute",inset:0,background:"#000"},children:r.jsx("iframe",{src:"/browser",title:"Browser",style:{width:"100%",height:"100%",border:0,display:"block"},allow:"camera;microphone;clipboard-read;clipboard-write;fullscreen;autoplay"})})}export{o as BrowserPage,o as default};

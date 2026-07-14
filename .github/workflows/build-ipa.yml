@@ -1,8 +1,8 @@
-name: Build unsigned IPA (sideload)
+name: Build IPA
 
-# Produces an UNSIGNED .ipa for sideloading (AltStore / Sideloadly / TrollStore)
-# that bundles the Pardalos web app as local assets — no external server needed.
-# The frontend dist is pre-built and committed at web-assets/ in this repo.
+# Produces an .ipa for sideloading (AltStore / SideStore / EAS).
+# The app is a single full-screen WebView that loads Pardalos from the server.
+# No local web assets are bundled — the web UI IS the server UI.
 
 on:
   workflow_dispatch:
@@ -13,14 +13,12 @@ on:
       - 'App.tsx'
       - 'app.json'
       - 'package.json'
-      - 'scripts/**'
-      - 'web-assets/**'
       - '.github/workflows/build-ipa.yml'
 
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -33,33 +31,13 @@ jobs:
           node-version: 22
           cache: 'npm'
 
-      # ── Step 1: Install iOS dependencies ──────────────────────────
-      - name: Install iOS dependencies
+      - name: Install dependencies
         run: npm ci
 
-      # ── Step 2: Expo prebuild (generate native iOS project) ───────
-      - name: Expo prebuild (generate native iOS project)
-        run: npx expo prebuild --platform ios
-
-      # ── Step 3: Copy web assets into the generated Xcode project ──
-      - name: Copy web assets to Xcode project
-        run: |
-          mkdir -p ios/Pardalos/web
-          cp -R web-assets/* ios/Pardalos/web/
-          echo "Web assets copied:"
-          find ios/Pardalos/web -type f | head -10
-          echo "... ($(find ios/Pardalos/web -type f | wc -l) files, $(du -sh ios/Pardalos/web | cut -f1) total)"
-
-      # ── Step 4: Add web assets build phase to Xcode project ──────
-      - name: Add web assets to Xcode build phase
-        run: |
-          gem install xcodeproj --no-document --quiet 2>/dev/null || true
-          ruby scripts/bundle-web-assets.rb
-
-      # ── Step 5: Detect workspace + scheme ────────────────────────
       - name: Detect workspace + scheme
         id: xc
         run: |
+          npx expo prebuild --platform ios --no-install
           cd ios
           WS=$(ls -d *.xcworkspace | head -1)
           SCHEME=$(basename "$(ls -d *.xcodeproj | head -1)" .xcodeproj)
@@ -67,7 +45,6 @@ jobs:
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Using workspace=$WS scheme=$SCHEME"
 
-      # ── Step 6: Build unsigned ───────────────────────────────────
       - name: Build unsigned (device)
         run: |
           cd ios
@@ -81,8 +58,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      # ── Step 7: Package into unsigned .ipa ───────────────────────
-      - name: Package .app into unsigned .ipa
+      - name: Package .app into .ipa
         run: |
           cd "$RUNNER_TEMP"
           APP=$(find dd/Build/Products -maxdepth 2 -name '*.app' -path '*Release-iphoneos*' | head -1)
@@ -90,11 +66,11 @@ jobs:
           test -n "$APP" || { echo "No .app found"; find dd/Build/Products -name '*.app'; exit 1; }
           rm -rf Payload && mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -qry Pardalos-unsigned.ipa Payload
-          ls -lh Pardalos-unsigned.ipa
+          zip -qry Pardalos.ipa Payload
+          ls -lh Pardalos.ipa
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pardalos-unsigned-ipa
-          path: ${{ runner.temp }}/Pardalos-unsigned.ipa
+          name: pardalos-ipa
+          path: ${{ runner.temp }}/Pardalos.ipa
           if-no-files-found: error

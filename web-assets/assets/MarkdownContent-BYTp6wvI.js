@@ -1,1 +1,0 @@
-import{j as e}from"./vendor-react-BtmteCOU.js";import{M as s,a,r as n,b as m}from"./vendor-markdown-Zht21CfG.js";const E=[n],i=[n,m],M=[a],R=[];function k({content:o,components:t,hasMath:r}){return e.jsx(s,{remarkPlugins:r?i:E,rehypePlugins:r?M:R,components:t,children:o})}export{k as MarkdownContent};
