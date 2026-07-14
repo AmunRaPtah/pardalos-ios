@@ -1,0 +1,1 @@
+import{j as e}from"./vendor-react-BtmteCOU.js";function s(){return e.jsx("div",{style:{position:"absolute",inset:0,background:"#0b0b0d"},children:e.jsx("iframe",{src:"/files-manager",title:"Files",style:{width:"100%",height:"100%",border:0,display:"block"}})})}export{s as FilesPage,s as default};

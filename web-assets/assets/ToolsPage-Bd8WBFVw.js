@@ -1,0 +1,1 @@
+import{j as o}from"./vendor-react-BtmteCOU.js";function s(){return o.jsx("div",{style:{position:"absolute",inset:0,background:"#0b0b0d"},children:o.jsx("iframe",{src:"/tools-page",title:"Tools",style:{width:"100%",height:"100%",border:0,display:"block"}})})}export{s as ToolsPage,s as default};

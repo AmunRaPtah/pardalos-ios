@@ -1,0 +1,1 @@
+import{j as e}from"./vendor-react-BtmteCOU.js";function t(){return e.jsx("div",{style:{position:"absolute",inset:0,background:"#0f0f14"},children:e.jsx("iframe",{src:"/reader",title:"Reader",style:{width:"100%",height:"100%",border:0,display:"block"}})})}export{t as ReaderPage,t as default};
