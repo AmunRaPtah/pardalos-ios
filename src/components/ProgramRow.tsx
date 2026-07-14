@@ -2,7 +2,7 @@ import React from 'react'
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
 import { useTheme } from '@/hooks/useTheme'
 import type { Programme } from '@/types'
-import { daysLeftText, daysLeftColor, formatAmount, fitColor, fitLabel, statusColor, statusLabel } from '@/utils/format'
+import { daysLeftText, daysLeftThemeColor, formatAmount, fitColor, fitLabel, statusColor, statusLabel } from '@/utils/format'
 
 interface ProgramRowProps {
   program: Programme
@@ -60,14 +60,7 @@ export function ProgramRow({ program, onPress }: ProgramRowProps) {
         <Text
           style={[
             styles.days,
-            {
-              color:
-                daysLeftColor(program.days_left) === 'error'
-                  ? colors.error
-                  : daysLeftColor(program.days_left) === 'warning'
-                  ? colors.warning
-                  : colors.textMuted,
-            },
+            { color: daysLeftThemeColor(program.days_left, colors, colors.textMuted) },
           ]}
         >
           {daysLeftText(program.days_left)}

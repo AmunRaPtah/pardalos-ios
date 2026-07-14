@@ -45,7 +45,7 @@ export function DashboardScreen() {
         </View>
         <TouchableOpacity
           style={[styles.settingsBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => navigation.navigate('Settings')}
+          onPress={() => navigation.navigate('SettingsTab')}
           activeOpacity={0.7}
         >
           <Text style={styles.settingsIcon}>⚙️</Text>
@@ -55,30 +55,38 @@ export function DashboardScreen() {
       {/* Stats row */}
       {stats && (
         <View style={styles.statsRow}>
-          <StatCard
-            label="Total"
-            value={stats.total ?? dashboard?.total_programs ?? 0}
-            color={colors.text}
-            icon="📊"
-          />
-          <StatCard
-            label="Actionable"
-            value={stats.actionable ?? 0}
-            color={colors.primary}
-            icon="🎯"
-          />
-          <StatCard
-            label="Enriched"
-            value={stats.enriched ?? 0}
-            color={colors.success}
-            icon="✨"
-          />
-          <StatCard
-            label="High Fit"
-            value={growth?.current?.high_fit ?? stats.high_fit ?? 0}
-            color={colors.info}
-            icon="⭐"
-          />
+          <View style={styles.statCardWrap}>
+            <StatCard
+              label="Total"
+              value={stats.total ?? dashboard?.total_programs ?? 0}
+              color={colors.text}
+              icon="📊"
+            />
+          </View>
+          <View style={styles.statCardWrap}>
+            <StatCard
+              label="Actionable"
+              value={stats.actionable ?? 0}
+              color={colors.primary}
+              icon="🎯"
+            />
+          </View>
+          <View style={styles.statCardWrap}>
+            <StatCard
+              label="Enriched"
+              value={stats.enriched ?? 0}
+              color={colors.success}
+              icon="✨"
+            />
+          </View>
+          <View style={styles.statCardWrap}>
+            <StatCard
+              label="High Fit"
+              value={growth?.current?.high_fit ?? stats.high_fit ?? 0}
+              color={colors.info}
+              icon="⭐"
+            />
+          </View>
         </View>
       )}
 
@@ -86,7 +94,9 @@ export function DashboardScreen() {
       {dashboard?.timeline && dashboard.timeline.length > 0 && (
         <UrgencyTimeline
           items={dashboard.timeline}
-          onProgramPress={(id) => navigation.navigate('ProgramDetail', { programId: id })}
+          onProgramPress={(id) =>
+            navigation.navigate('ProgramsTab', { screen: 'ProgramDetail', params: { programId: id } })
+          }
         />
       )}
 
@@ -98,7 +108,7 @@ export function DashboardScreen() {
         <View style={[styles.sectionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Tracks</Text>
           {Object.entries(trackBreakdown).map(([track, data]: [string, any]) => (
-            <View key={track} style={styles.trackRow}>
+            <View key={track} style={[styles.trackRow, { borderBottomColor: colors.border }]}>
               <View style={styles.trackInfo}>
                 <Text style={[styles.trackName, { color: colors.text }]}>{track}</Text>
                 <Text style={[styles.trackCount, { color: colors.textSecondary }]}>
@@ -124,14 +134,14 @@ export function DashboardScreen() {
       <View style={styles.actionsRow}>
         <TouchableOpacity
           style={[styles.actionBtn, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Programs')}
+          onPress={() => navigation.navigate('ProgramsTab')}
           activeOpacity={0.8}
         >
           <Text style={styles.actionBtnText}>View All Programs</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionBtn, styles.actionBtnSecondary, { backgroundColor: colors.surface, borderColor: colors.border }]}
-          onPress={() => navigation.navigate('Applications')}
+          onPress={() => navigation.navigate('ApplicationsTab')}
           activeOpacity={0.8}
         >
           <Text style={[styles.actionBtnText, { color: colors.text }]}>Applications</Text>
@@ -163,9 +173,12 @@ const styles = StyleSheet.create({
   settingsIcon: { fontSize: 18 },
   statsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
     marginBottom: 20,
-    flexWrap: 'wrap',
+  },
+  statCardWrap: {
+    width: '48%',
   },
   sectionCard: {
     padding: 16,
@@ -184,7 +197,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#333',
   },
   trackInfo: {},
   trackName: { fontSize: 14, fontWeight: '600' },

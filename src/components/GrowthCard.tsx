@@ -11,11 +11,12 @@ export function GrowthCard({ growth }: GrowthCardProps) {
   const theme = useTheme()
   const colors = theme.colors
 
-  if (!growth) return null
+  if (!growth || !growth.current || !growth.growth_rates) return null
 
   const { current, growth_rates, health_assessment } = growth
   const isHealthy = health_assessment?.toLowerCase().includes('healthy')
   const healthColor = isHealthy ? colors.success : colors.warning
+  const growthPct = growth_rates.actionable_growth_pct ?? 0
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -31,33 +32,33 @@ export function GrowthCard({ growth }: GrowthCardProps) {
       <View style={styles.metrics}>
         <View style={styles.metric}>
           <Text style={[styles.metricValue, { color: colors.text }]}>
-            {current.actionable}
+            {current.actionable ?? 0}
           </Text>
           <Text style={[styles.metricLabel, { color: colors.textMuted }]}>Actionable</Text>
         </View>
         <View style={styles.metric}>
           <Text style={[styles.metricValue, { color: colors.text }]}>
-            {current.enriched}
+            {current.enriched ?? 0}
           </Text>
           <Text style={[styles.metricLabel, { color: colors.textMuted }]}>Enriched</Text>
         </View>
         <View style={styles.metric}>
-          <Text style={[styles.metricValue, { color: growth_rates.actionable_growth_pct >= 0 ? colors.success : colors.error }]}>
-            {growth_rates.actionable_growth_pct >= 0 ? '+' : ''}{growth_rates.actionable_growth_pct.toFixed(1)}%
+          <Text style={[styles.metricValue, { color: growthPct >= 0 ? colors.success : colors.error }]}>
+            {growthPct >= 0 ? '+' : ''}{growthPct.toFixed(1)}%
           </Text>
           <Text style={[styles.metricLabel, { color: colors.textMuted }]}>Growth</Text>
         </View>
         <View style={styles.metric}>
           <Text style={[styles.metricValue, { color: colors.text }]}>
-            {current.new_last_7d}
+            {current.new_last_7d ?? 0}
           </Text>
           <Text style={[styles.metricLabel, { color: colors.textMuted }]}>New (7d)</Text>
         </View>
       </View>
 
-      <View style={styles.extraRow}>
+      <View style={[styles.extraRow, { borderTopColor: colors.border }]}>
         <Text style={[styles.extraText, { color: colors.textMuted }]}>
-          {current.total} total · {current.high_fit} high-fit · {current.scout_entries} scout
+          {current.total ?? 0} total · {current.high_fit ?? 0} high-fit · {current.scout_entries ?? 0} scout
         </Text>
       </View>
     </View>
@@ -109,7 +110,6 @@ const styles = StyleSheet.create({
   extraRow: {
     paddingTop: 8,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#333',
   },
   extraText: {
     fontSize: 12,

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Pardalos",
     "slug": "pardalos",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.pardalos.app",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
@@ -31,6 +31,16 @@
         "projectId": "f830a7cd-76ab-44bb-b3ff-672bd69cf29c"
       }
     },
-    "owner": "senseibangs-team"
+    "owner": "senseibangs-team",
+    "plugins": [
+      "expo-sharing"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f830a7cd-76ab-44bb-b3ff-672bd69cf29c"
+    },
+    "android": {}
   }
 }

@@ -52,7 +52,9 @@ export function ApplicationsScreen() {
   const renderItem = ({ item }: { item: ApplicationItem }) => (
     <TouchableOpacity
       style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      onPress={() => navigation.navigate('ProgramDetail', { programId: item.id })}
+      onPress={() =>
+        navigation.navigate('ProgramsTab', { screen: 'ProgramDetail', params: { programId: item.id } })
+      }
       activeOpacity={0.7}
     >
       <View style={styles.cardTop}>

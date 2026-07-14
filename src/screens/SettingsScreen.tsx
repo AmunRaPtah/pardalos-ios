@@ -106,13 +106,39 @@ export function SettingsScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Get Started */}
+      {/* Pardalos Web App */}
+      <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Pardalos Web App</Text>
+        <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+          The "Pardalos" tab (🏠) loads the full Pardalos web application from the server URL above.
+          All features — Chat, Research, Compute, Email, Calendar, Voice, Video, and more — are
+          available inside that tab.
+        </Text>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Web App URL</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]} numberOfLines={1}>
+            {url || 'https://pardalos.zyco.org'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.clearCacheButton, { borderColor: colors.border }]}
+          onPress={() => Alert.alert('Clear Cache', 'Restart the app to clear the WebView cache.')}
+          activeOpacity={0.7}
+        >
+          <Text style={[styles.clearCacheText, { color: colors.warning }]}>
+            Clear Web Cache
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Getting Started */}
       <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Getting Started</Text>
         <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
           1. Enter your Pardalos server URL (e.g., https://pardalos.zyco.org){'\n'}
           2. Tap "Save & Test" to verify the connection{'\n'}
           3. The dashboard will load with your grant pipeline data{'\n'}
+          4. The Pardalos tab will load the full web app from your server{'\n'}
           {'\n'}
           Your Pardalos server must be running and accessible from your iPhone.
         </Text>
@@ -121,15 +147,15 @@ export function SettingsScreen() {
       {/* App Info */}
       <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>App</Text>
           <Text style={[styles.infoValue, { color: colors.text }]}>Pardalos</Text>
         </View>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Version</Text>
-          <Text style={[styles.infoValue, { color: colors.text }]}>1.0.0</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>1.1.0</Text>
         </View>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Bundle</Text>
           <Text style={[styles.infoValue, { color: colors.text }]}>com.pardalos.app</Text>
         </View>
@@ -198,8 +224,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#333',
   },
   infoLabel: { fontSize: 14 },
   infoValue: { fontSize: 14, fontWeight: '600' },
+  clearCacheButton: {
+    marginTop: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  clearCacheText: { fontSize: 13, fontWeight: '600' },
 })

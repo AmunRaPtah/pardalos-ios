@@ -7,12 +7,18 @@ import { ProgramsScreen } from '@/screens/ProgramsScreen'
 import { ProgramDetailScreen } from '@/screens/ProgramDetailScreen'
 import { ApplicationsScreen } from '@/screens/ApplicationsScreen'
 import { SettingsScreen } from '@/screens/SettingsScreen'
+import { BrowserScreen } from '@/screens/BrowserScreen'
+import { FilesScreen } from '@/screens/FilesScreen'
+import { PardalosWebScreen } from '@/screens/PardalosWebScreen'
 import { Text } from 'react-native'
 
 type TabParamList = {
+  PardalosTab: undefined
   DashboardTab: undefined
   ProgramsTab: undefined
   ApplicationsTab: undefined
+  BrowserTab: undefined
+  FilesTab: undefined
   SettingsTab: undefined
 }
 
@@ -54,14 +60,19 @@ function ProgramsStack() {
   )
 }
 
-function TabIcon({ label, focused, color }: { label: string; focused: boolean; color: string }) {
+function TabIcon({ label, focused }: { label: string; focused: boolean }) {
   const icons: Record<string, string> = {
+    Pardalos: '🏠',
     Dashboard: '📊',
     Programs: '🎯',
     Applications: '📋',
+    Browser: '🌐',
+    Files: '📁',
     Settings: '⚙️',
   }
-  return <Text style={{ fontSize: 22 }}>{icons[label] || '📄'}</Text>
+  return (
+    <Text style={{ fontSize: focused ? 24 : 22 }}>{icons[label] || '📄'}</Text>
+  )
 }
 
 export function AppNavigator() {
@@ -72,8 +83,8 @@ export function AppNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color }) => (
-          <TabIcon label={route.name.replace('Tab', '')} focused={focused} color={color} />
+        tabBarIcon: ({ focused }) => (
+          <TabIcon label={route.name.replace('Tab', '')} focused={focused} />
         ),
         tabBarActiveTintColor: colors.tabBarActive,
         tabBarInactiveTintColor: colors.tabBarInactive,
@@ -92,6 +103,11 @@ export function AppNavigator() {
       })}
     >
       <Tab.Screen
+        name="PardalosTab"
+        component={PardalosWebScreen}
+        options={{ tabBarLabel: 'Pardalos' }}
+      />
+      <Tab.Screen
         name="DashboardTab"
         component={DashboardScreen}
         options={{ tabBarLabel: 'Dashboard' }}
@@ -104,7 +120,17 @@ export function AppNavigator() {
       <Tab.Screen
         name="ApplicationsTab"
         component={ApplicationsScreen}
-        options={{ tabBarLabel: 'Applications' }}
+        options={{ tabBarLabel: 'Apps' }}
+      />
+      <Tab.Screen
+        name="BrowserTab"
+        component={BrowserScreen}
+        options={{ tabBarLabel: 'Browser' }}
+      />
+      <Tab.Screen
+        name="FilesTab"
+        component={FilesScreen}
+        options={{ tabBarLabel: 'Files' }}
       />
       <Tab.Screen
         name="SettingsTab"
