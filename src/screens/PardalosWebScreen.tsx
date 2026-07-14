@@ -1,4 +1,4 @@
-// ── Full Pardalos web app in a managed WebView ──
+// ── Full Pardalos web app loaded from local bundle ──
 
 import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react'
 import {
@@ -10,6 +10,7 @@ import {
   AppStateStatus,
 } from 'react-native'
 import { WebView, type WebViewNavigation } from 'react-native-webview'
+import * as FileSystem from 'expo-file-system/legacy'
 import { useNavigation, useIsFocused } from '@react-navigation/native'
 import { useTheme } from '@/hooks/useTheme'
 import { useServerConfig } from '@/hooks/useServerConfig'
@@ -21,6 +22,10 @@ import { WebErrorState } from '@/components/WebErrorState'
 import { CONFIG } from '@/config'
 
 type LoadState = 'loading' | 'success' | 'error'
+
+/** Path to the bundled web app inside the .app bundle */
+const WEB_ASSETS_PATH = FileSystem.bundleDirectory + 'web/'
+const WEB_INDEX_PATH = WEB_ASSETS_PATH + 'index.html'
 
 export function PardalosWebScreen() {
   const theme = useTheme()
@@ -37,24 +42,73 @@ export function PardalosWebScreen() {
   const [canGoBack, setCanGoBack] = useState(false)
   const [isConnected, setIsConnected] = useState(true)
   const [showOfflineBanner, setShowOfflineBanner] = useState(false)
+  const [htmlContent, setHtmlContent] = useState<string | null>(null)
+  const [htmlError, setHtmlError] = useState<string | null>(null)
 
   // Register this WebView ref with the bridge context
   useEffect(() => {
     registerWebView(webRef)
   }, [registerWebView])
 
-  // ── Build the URL to load ──────────────────────────────────────
-  const homeUrl = useMemo(() => {
-    const base = (serverUrl || CONFIG.defaultServerUrl).replace(/\/+$/, '')
-    return base + '/'
+  // ── Load the bundled index.html on mount ────────────────────────
+  useEffect(() => {
+    ;(async () => {
+      try {
+        // Check if the web assets exist in the bundle first
+        const dirInfo = await FileSystem.getInfoAsync(WEB_ASSETS_PATH)
+        if (!dirInfo.exists) {
+          setHtmlError(`Web assets not found at ${WEB_ASSETS_PATH}`)
+          return
+        }
+        const html = await FileSystem.readAsStringAsync(WEB_INDEX_PATH)
+        if (!html.includes('<html') && !html.includes('<!DOCTYPE')) {
+          setHtmlError('index.html does not contain valid HTML')
+          return
+        }
+        setHtmlContent(html)
+      } catch (err: any) {
+        console.error('Failed to load bundled web app:', err)
+        setHtmlError(`Failed to load web app: ${err.message || err}`)
+      }
+    })()
+  }, [])
+
+  // ── Build the server URL for API calls ──────────────────────────
+  const apiServerUrl = useMemo(() => {
+    return (serverUrl || CONFIG.defaultServerUrl).replace(/\/+$/, '')
   }, [serverUrl])
+
+  // ── JavaScript injected BEFORE content loads ────────────────────
+  const injectionScript = useMemo(() => {
+    return `
+      // Tell the SPA to use the configured API server
+      window.__PARDALOS_API_URL__ = '${apiServerUrl}/api';
+      window.__PARDALOS_MODE__ = 'hybrid';
+
+      // Fix for Vite-SPA boot: ensure base path is correct for file:// loading
+      document.currentScript && document.currentScript.remove();
+
+      // Forward connectivity state
+      window.__PARDALOS_CONNECTED__ = ${isConnected};
+
+      ${getBridgeInjectionScript()}
+    `
+  }, [apiServerUrl, isConnected])
+
+  // ── Build the WebView source ────────────────────────────────────
+  const webViewSource = useMemo(() => {
+    if (!htmlContent) return undefined
+    return {
+      html: htmlContent,
+      baseUrl: WEB_ASSETS_PATH,
+    }
+  }, [htmlContent])
 
   // ── Periodic connectivity check ─────────────────────────────────
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const result = await checkConnection()
-        // checkConnection is void — we just check if the network is there
+        await checkConnection()
         setIsConnected(true)
         setShowOfflineBanner(false)
       } catch {
@@ -70,7 +124,6 @@ export function PardalosWebScreen() {
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active') {
-        // Refresh connectivity check when coming to foreground
         checkConnection()
       }
     })
@@ -138,7 +191,8 @@ export function PardalosWebScreen() {
   // ── Only allow navigation to the configured server ──────────────
   const onShouldStartLoadWithRequest = useCallback(
     (request: WebViewNavigation) => {
-      // Allow the home URL and any sub-paths on the same origin
+      // Allow file:// (local assets) and the configured server
+      if (request.url.startsWith('file://')) return true
       const base = (serverUrl || CONFIG.defaultServerUrl).replace(/\/+$/, '')
       return request.url.startsWith(base)
     },
@@ -190,44 +244,52 @@ export function PardalosWebScreen() {
         </View>
       )}
 
-      {/* WebView */}
+      {/* WebView or error state */}
       <View style={styles.webViewContainer}>
-        <WebView
-          ref={webRef}
-          key={homeUrl} // Force remount when URL changes
-          source={{ uri: homeUrl }}
-          style={styles.webView}
-          onLoadStart={handleLoadStart}
-          onLoadEnd={handleLoadEnd}
-          onLoadProgress={handleLoadProgress}
-          onError={handleError}
-          onNavigationStateChange={handleNavigationStateChange}
-          onMessage={onMessage}
-          onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
-          injectedJavaScript={getBridgeInjectionScript()}
-          javaScriptEnabled
-          domStorageEnabled
-          allowsInlineMediaPlayback
-          mediaPlaybackRequiresUserAction={false}
-          sharedCookiesEnabled
-          thirdPartyCookiesEnabled
-          setBuiltInZoomControls={false}
-          overScrollMode="never"
-          bounces={false}
-          pullToRefreshEnabled={false}
-          allowsBackForwardNavigationGestures
-          decelerationRate="normal"
-          hideKeyboardAccessoryView={false}
-          userAgent={`Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ${CONFIG.webViewUserAgent}`}
-        />
+        {htmlError ? (
+          <WebErrorState
+            error={htmlError}
+            onRetry={handleRetry}
+            onSettings={handleSettings}
+          />
+        ) : htmlContent && webViewSource ? (
+          <WebView
+            ref={webRef}
+            source={webViewSource}
+            style={styles.webView}
+            onLoadStart={handleLoadStart}
+            onLoadEnd={handleLoadEnd}
+            onLoadProgress={handleLoadProgress}
+            onError={handleError}
+            onNavigationStateChange={handleNavigationStateChange}
+            onMessage={onMessage}
+            onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+            injectedJavaScriptBeforeContentLoaded={injectionScript}
+            javaScriptEnabled
+            domStorageEnabled
+            allowFileAccess
+            allowsInlineMediaPlayback
+            mediaPlaybackRequiresUserAction={false}
+            sharedCookiesEnabled
+            thirdPartyCookiesEnabled
+            setBuiltInZoomControls={false}
+            overScrollMode="never"
+            bounces={false}
+            pullToRefreshEnabled={false}
+            allowsBackForwardNavigationGestures
+            decelerationRate="normal"
+            hideKeyboardAccessoryView={false}
+            userAgent={`Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 ${CONFIG.webViewUserAgent}`}
+          />
+        ) : null}
 
         {/* Loading overlay */}
-        {loadState === 'loading' && (
+        {loadState === 'loading' && htmlContent && (
           <WebLoadingState progress={loadProgress} />
         )}
 
-        {/* Error overlay */}
-        {loadState === 'error' && loadError && (
+        {/* Error overlay for WebView load errors */}
+        {loadState === 'error' && loadError && htmlContent && (
           <WebErrorState
             error={loadError}
             onRetry={handleRetry}
