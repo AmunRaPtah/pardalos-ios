@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Primary gradient: deep teal → bright cyan -->
+    <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d9488" />
+      <stop offset="50%" stop-color="#0891b2" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <!-- Warm accent gradient -->
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+
+    <!-- Outer glow -->
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="60%" stop-color="#0891b2" stop-opacity="0.15" />
+      <stop offset="85%" stop-color="#0891b2" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#0891b2" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Subtle ring gradient (faint outer) -->
+    <linearGradient id="ring-subtle" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0d9488" stop-opacity="0.2" />
+      <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.2" />
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="0" fill="none" />
+
+  <!-- Background glow circle -->
+  <circle cx="256" cy="256" r="220" fill="url(#glow)" />
+
+  <!-- Outer orbital ring (faint, decorative) -->
+  <circle cx="256" cy="256" r="175" fill="none" stroke="url(#ring-subtle)" stroke-width="5" stroke-dasharray="8 12" />
+
+  <!-- Main geometric form: three overlapping orbital arcs creating a P-like negative space -->
+
+  <!-- Orbital arc 1 — top-right arc -->
+  <path d="M 256 105
+           A 151 151 0 0 1 407 256"
+        fill="none" stroke="url(#primary)" stroke-width="28" stroke-linecap="round" />
+
+  <!-- Orbital arc 2 — bottom arc stretching left -->
+  <path d="M 407 256
+           A 151 151 0 0 1 180 380
+           A 151 151 0 0 1 105 256"
+        fill="none" stroke="url(#primary)" stroke-width="28" stroke-linecap="round" stroke-dasharray="280 999" />
+
+  <!-- Orbital arc 3 — short ascending left arc (forms the P ascender feel) -->
+  <path d="M 105 256
+           A 151 151 0 0 1 256 105"
+        fill="none" stroke="url(#primary)" stroke-width="28" stroke-linecap="round" stroke-dasharray="140 999" />
+
+  <!-- Central node — the core intelligence -->
+  <circle cx="256" cy="256" r="38" fill="#0f172a" />
+  <circle cx="256" cy="256" r="38" fill="none" stroke="url(#primary)" stroke-width="10" />
+  <circle cx="256" cy="256" r="18" fill="url(#primary)" />
+
+  <!-- Agent node 1 — top right (smaller, orbiting) -->
+  <circle cx="390" cy="147" r="18" fill="#0f172a" stroke="url(#accent)" stroke-width="6" />
+  <circle cx="390" cy="147" r="7" fill="url(#accent)" />
+
+  <!-- Agent node 2 — bottom (smaller, orbiting) -->
+  <circle cx="147" cy="378" r="14" fill="#0f172a" stroke="url(#primary)" stroke-width="5" />
+  <circle cx="147" cy="378" r="5" fill="url(#primary)" />
+
+  <!-- Subtle inner ring connecting the nodes conceptually -->
+  <circle cx="256" cy="256" r="105" fill="none" stroke="#06b6d4" stroke-width="1.5" stroke-opacity="0.15" stroke-dasharray="4 8" />
+</svg>

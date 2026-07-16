@@ -2,10 +2,10 @@
   "expo": {
     "name": "Pardalos",
     "slug": "pardalos",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "scheme": "pardalos",
     "ios": {
       "supportsTablet": true,
@@ -19,9 +19,9 @@
       }
     },
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0f0f1a"
+      "backgroundColor": "#010103"
     },
     "platforms": [
       "ios"
@@ -34,6 +34,13 @@
     "owner": "senseibangs-team",
     "plugins": [
       "expo-sharing"
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/f830a7cd-76ab-44bb-b3ff-672bd69cf29c"
+    },
+    "android": {}
   }
 }

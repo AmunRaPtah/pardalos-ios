@@ -1,7 +1,4 @@
-name: Build unsigned IPA (sideload)
-
-# Produces an UNSIGNED .ipa for sideloading (AltStore / Sideloadly / TrollStore).
-# No Apple Developer account required — the sideload tool re-signs at install.
+name: Build IPA
 
 on:
   workflow_dispatch:
@@ -16,39 +13,36 @@ on:
 
 jobs:
   build:
-    runs-on: macos-26
-    timeout-minutes: 60
+    runs-on: macos-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
-      # Expo SDK 57 / RN 0.86 require Swift 6.2 -> Xcode 26.
       - uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.0.1'
+          xcode-version: 'latest-stable'
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: 'npm'
 
-      - name: Install JS dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: Expo prebuild (generate native iOS project + pods)
+      - name: Expo prebuild (generate native iOS project)
         run: npx expo prebuild --platform ios
 
       - name: Detect workspace + scheme
         id: xc
         run: |
           cd ios
-          WS=$(ls -d *.xcworkspace | head -1)
-          # The app scheme matches the .xcodeproj name (NOT the first Pod scheme).
-          SCHEME=$(basename "$(ls -d *.xcodeproj | head -1)" .xcodeproj)
+          WS=$(ls -d *.xcworkspace 2>/dev/null | head -1)
+          SCHEME=$(basename "$(ls -d *.xcodeproj 2>/dev/null | head -1)" .xcodeproj)
           echo "workspace=$WS" >> "$GITHUB_OUTPUT"
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Using workspace=$WS scheme=$SCHEME"
-          echo "--- available schemes ---"
-          xcodebuild -workspace "$WS" -list 2>/dev/null | sed -n '/Schemes:/,$p' | head -20
+          test -n "$WS" || { echo "No .xcworkspace found"; exit 1; }
 
       - name: Build unsigned (device)
         run: |
@@ -63,7 +57,7 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
-      - name: Package .app into unsigned .ipa
+      - name: Package .app into .ipa
         run: |
           cd "$RUNNER_TEMP"
           APP=$(find dd/Build/Products -maxdepth 2 -name '*.app' -path '*Release-iphoneos*' | head -1)
@@ -71,11 +65,11 @@ jobs:
           test -n "$APP" || { echo "No .app found"; find dd/Build/Products -name '*.app'; exit 1; }
           rm -rf Payload && mkdir -p Payload
           cp -R "$APP" Payload/
-          zip -qry Pardalos-unsigned.ipa Payload
-          ls -lh Pardalos-unsigned.ipa
+          zip -qry Pardalos.ipa Payload
+          ls -lh Pardalos.ipa
 
       - uses: actions/upload-artifact@v4
         with:
-          name: pardalos-unsigned-ipa
-          path: ${{ runner.temp }}/Pardalos-unsigned.ipa
+          name: pardalos-ipa
+          path: ${{ runner.temp }}/Pardalos.ipa
           if-no-files-found: error
