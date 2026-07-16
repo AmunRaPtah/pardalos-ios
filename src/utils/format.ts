@@ -30,6 +30,17 @@ export function daysLeftColor(days: number | undefined | null): 'error' | 'warni
   return 'success'
 }
 
+export function daysLeftThemeColor(
+  days: number | undefined | null,
+  colors: { error: string; warning: string },
+  fallback: string,
+): string {
+  const state = daysLeftColor(days)
+  if (state === 'error') return colors.error
+  if (state === 'warning') return colors.warning
+  return fallback
+}
+
 export function fitColor(fit: string | undefined): string {
   switch (fit?.toUpperCase()) {
     case 'HIGH': return '#22c55e'

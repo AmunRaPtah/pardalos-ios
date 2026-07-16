@@ -121,15 +121,15 @@ export function SettingsScreen() {
       {/* App Info */}
       <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>App</Text>
           <Text style={[styles.infoValue, { color: colors.text }]}>Pardalos</Text>
         </View>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Version</Text>
           <Text style={[styles.infoValue, { color: colors.text }]}>1.0.0</Text>
         </View>
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
           <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Bundle</Text>
           <Text style={[styles.infoValue, { color: colors.text }]}>com.pardalos.app</Text>
         </View>
@@ -198,7 +198,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#333',
   },
   infoLabel: { fontSize: 14 },
   infoValue: { fontSize: 14, fontWeight: '600' },

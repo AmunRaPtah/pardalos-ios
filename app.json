@@ -31,6 +31,9 @@
         "projectId": "f830a7cd-76ab-44bb-b3ff-672bd69cf29c"
       }
     },
-    "owner": "senseibangs-team"
+    "owner": "senseibangs-team",
+    "plugins": [
+      "expo-sharing"
+    ]
   }
 }

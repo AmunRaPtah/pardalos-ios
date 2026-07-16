@@ -9,7 +9,7 @@ import {
   Alert,
   Linking,
 } from 'react-native'
-import { useNavigation, useRoute, type RouteProp } from '@react-navigation/native'
+import { useRoute, type RouteProp } from '@react-navigation/native'
 import { useTheme } from '@/hooks/useTheme'
 import { api } from '@/api/client'
 import type { ProgramDetail } from '@/types'
@@ -17,7 +17,7 @@ import { LoadingState } from '@/components/LoadingState'
 import {
   formatAmount,
   daysLeftText,
-  daysLeftColor,
+  daysLeftThemeColor,
   fitColor,
   fitLabel,
   statusColor,
@@ -32,7 +32,6 @@ type ParamList = {
 export function ProgramDetailScreen() {
   const theme = useTheme()
   const colors = theme.colors
-  const navigation = useNavigation()
   const route = useRoute<RouteProp<ParamList, 'ProgramDetail'>>()
   const { programId } = route.params
 
@@ -129,14 +128,7 @@ export function ProgramDetailScreen() {
             <Text
               style={[
                 styles.metaValue,
-                {
-                  color:
-                    daysLeftColor(detail.days_left) === 'error'
-                      ? colors.error
-                      : daysLeftColor(detail.days_left) === 'warning'
-                      ? colors.warning
-                      : colors.text,
-                },
+                { color: daysLeftThemeColor(detail.days_left, colors, colors.text) },
               ]}
             >
               {daysLeftText(detail.days_left)}
